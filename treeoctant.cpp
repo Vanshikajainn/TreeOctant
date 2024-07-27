@@ -1,331 +1,225 @@
-// #include <iostream>
-// #include <vector>
-// #include <random>
-// #include <algorithm>
-// #include <cmath>
-
-// using namespace std;
-
-// template <typename T>
-// class GeometricEntity {
-// public:
-//     T _x, _y, _z;
-//     T _x2, _y2, _z2; // Coordinates for the end point of the line segment
-//     bool isLineSegment;
-
-//     // Constructor for a point
-//     GeometricEntity(T x, T y, T z) 
-//         : _x(x), _y(y), _z(z), isLineSegment(false) {}
-
-//     // Constructor for a line segment
-//     GeometricEntity(T x1, T y1, T z1, T x2, T y2, T z2) 
-//         : _x(x1), _y(y1), _z(z1), _x2(x2), _y2(y2), _z2(z2), isLineSegment(true) {}
-
-//     double length() const {
-//         if (isLineSegment) {
-//             return sqrt(pow(_x2 - _x, 2) + pow(_y2 - _y, 2) + pow(_z2 - _z, 2));
-//         }
-//         return 0;
-//     }
-// };
-
-// template <typename T>
-// class Node {
-// public:
-//     vector<GeometricEntity<T>> entities;
-//     int totalPoints;  // Total number of points in the node.
-//     int totalSegments; // Total number of line segments in the node.
-//     double totalSegmentLength; // Total length of line segments in the node.
-//     int capacity;
-//     T _xmin, _ymin, _zmin, _xmax, _ymax, _zmax;
-//     vector<Node*> children; // A vector of pointers to child nodes.
-
-//     Node(const vector<GeometricEntity<T>>& ents, int cap, T xmin, T ymin, T zmin, T xmax, T ymax, T zmax) 
-//         : entities(ents), capacity(cap), _xmin(xmin), _ymin(ymin), _zmin(zmin), _xmax(xmax), _ymax(ymax), _zmax(zmax), totalPoints(0), totalSegments(0), totalSegmentLength(0) {
-//             for (const auto& ent : entities) {
-//                 if (ent.isLineSegment) {
-//                     totalSegments++;
-//                     totalSegmentLength += ent.length();
-//                 } else {
-//                     totalPoints++;
-//                 }
-//             }
-//     }
-
-//     void divide() {
-//         if (entities.size() > capacity) {
-//             vector<vector<GeometricEntity<T>>> entityDistribution = distributeEntities(entities); // Distribute entities among child nodes.
-//             for (int i = 0; i < 8; ++i) { // Create child nodes.
-//                 T newXMin = _xmin + (i & 1) * (_xmax - _xmin) / 2; // Lower or upper half of x-axis.
-//                 T newYMin = _ymin + ((i >> 1) & 1) * (_ymax - _ymin) / 2;
-//                 T newZMin = _zmin + ((i >> 2) & 1) * (_zmax - _zmin) / 2;
-//                 T newXMax = newXMin + (_xmax - _xmin) / 2;
-//                 T newYMax = newYMin + (_ymax - _ymin) / 2;
-//                 T newZMax = newZMin + (_zmax - _zmin) / 2;
-//                 children.push_back(new Node(entityDistribution[i], capacity, newXMin, newYMin, newZMin, newXMax, newYMax, newZMax));
-//             }
-//             entities.clear();
-//         }
-//     }
-
-//     size_t pointSize() const {
-//         return totalPoints;
-//     }
-
-//     double segmentLength() const {
-//         return totalSegmentLength;
-//     }
-
-//     void print(int level = 0) const {
-//         for (int i = 0; i < level; ++i) cout << "--";
-//         cout << "Node(totalPoints: " << totalPoints 
-//              << ", pointsSize: " << pointSize() << ", totalSegments: " << totalSegments << ", totalSegmentLength: " << totalSegmentLength << ", capacity: " << capacity 
-//              << ", bounds: [" << _xmin << "," << _ymin << "," << _zmin 
-//              << "]-[" << _xmax << "," << _ymax << "," << _zmax << "])\n";
-//         for (const auto* child : children) {
-//             child->print(level + 1);
-//         }
-//     }
-
-// private:
-//     vector<vector<GeometricEntity<T>>> distributeEntities(const vector<GeometricEntity<T>>& ents) {
-//         vector<vector<GeometricEntity<T>>> distribution(8);
-//         for (const auto& ent : ents) {
-//             int index = (ent._x > (_xmin + _xmax) / 2) + ((ent._y > (_ymin + _ymax) / 2) << 1) + ((ent._z > (_zmin + _zmax) / 2) << 2);
-//             distribution[index].push_back(ent);
-//         }
-//         return distribution;
-//     }
-// };
-
-// template <typename T>
-// void createTree(Node<T>& node) {
-//     if (node.entities.size() > node.capacity) {
-//         node.divide();
-//         for (auto* child : node.children) {
-//             createTree(*child);
-//         }
-//     }
-// }
-
-// int main() {
-//     int numPoints, numSegments, capacity;
-
-//     cout << "Enter number of points for the root node: ";
-//     cin >> numPoints;
-
-//     cout << "Enter number of line segments for the root node: ";
-//     cin >> numSegments;
-
-//     cout << "Enter capacity for each node: ";
-//     cin >> capacity;
-
-//     vector<GeometricEntity<int>> entities;
-//     random_device rd;
-//     mt19937 rng(rd());
-//     uniform_int_distribution<int> dist(0, 100);
-
-//     for (int i = 0; i < numPoints; ++i) {
-//         entities.emplace_back(dist(rng), dist(rng), dist(rng));
-//     }
-
-//     for (int i = 0; i < numSegments; ++i) {
-//         entities.emplace_back(dist(rng), dist(rng), dist(rng), dist(rng), dist(rng), dist(rng));
-//     }
-
-//     Node<int> root(entities, capacity, 0, 0, 0, 100, 100, 100);
-
-//     createTree(root);
-
-//     cout << "\nOctree Structure:\n";
-//     root.print();
-
-//     cout << "\nRoot Node Point Size: " << root.pointSize() << endl;
-//     cout << "Root Node Total Segment Length: " << root.segmentLength() << endl;
-
-//     return 0;
-// }
-
-
-//g++ -std=c++11 "/Users/apple/octrees/linesegment.cpp" -o "/Users/apple/octrees/Program"
-//"/Users/apple/octrees/Program"
 #include <iostream>
 #include <vector>
 #include <random>
-#include <algorithm>
 #include <cmath>
+#include <tuple>
+#include <algorithm>
 
 using namespace std;
 
+// Define a geometric entity class for points and line segments
 template <typename T>
 class GeometricEntity {
 public:
     T _x, _y, _z;
-    T _x2, _y2, _z2; // Coordinates for the end point of the line segment
+    T _x2, _y2, _z2;
     bool isLineSegment;
 
-    // Constructor for a point
-    GeometricEntity(T x, T y, T z) 
-        : _x(x), _y(y), _z(z), isLineSegment(false) {}
+    // Point constructor
+    GeometricEntity(T x, T y, T z) : _x(x), _y(y), _z(z), isLineSegment(false) {}
 
-    // Constructor for a line segment
-    GeometricEntity(T x1, T y1, T z1, T x2, T y2, T z2) 
+    // Line segment constructor
+    GeometricEntity(T x1, T y1, T z1, T x2, T y2, T z2)
         : _x(x1), _y(y1), _z(z1), _x2(x2), _y2(y2), _z2(z2), isLineSegment(true) {}
-
-    double length() const {
-        if (isLineSegment) {
-            return sqrt(pow(_x2 - _x, 2) + pow(_y2 - _y, 2) + pow(_z2 - _z, 2));
-        }
-        return 0;
-    }
 };
 
+// Node class for the octree structure
 template <typename T>
 class Node {
 public:
     vector<GeometricEntity<T>> entities;
-    int totalPoints;  // Total number of points in the node.
-    int totalSegments; // Total number of line segments in the node.
-    double totalSegmentLength; // Total length of line segments in the node.
+    vector<Node*> children;
+    T xMin, yMin, zMin, xMax, yMax, zMax;
     int capacity;
-    T _xmin, _ymin, _zmin, _xmax, _ymax, _zmax;
-    vector<Node*> children; // A vector of pointers to child nodes.
+    bool divided;
 
-    Node(const vector<GeometricEntity<T>>& ents, int cap, T xmin, T ymin, T zmin, T xmax, T ymax, T zmax) 
-        : entities(ents), capacity(cap), _xmin(xmin), _ymin(ymin), _zmin(zmin), _xmax(xmax), _ymax(ymax), _zmax(zmax), totalPoints(0), totalSegments(0), totalSegmentLength(0) {
-            for (const auto& ent : entities) {
-                if (ent.isLineSegment) {
-                    totalSegments++;
-                    totalSegmentLength += ent.length();
-                } else {
-                    totalPoints++;
-                }
-            }
+    Node(const vector<GeometricEntity<T>>& entities, int capacity, T xMin, T yMin, T zMin, T xMax, T yMax, T zMax)
+        : entities(entities), capacity(capacity), xMin(xMin), yMin(yMin), zMin(zMin), xMax(xMax), yMax(yMax), zMax(zMax), divided(false) {}
+
+    ~Node() {
+        for (Node* child : children) {
+            delete child;
+        }
     }
 
     void divide() {
-        if (entities.size() > capacity) {
-            vector<vector<GeometricEntity<T>>> entityDistribution = distributeEntities(entities); // Distribute entities among child nodes.
-            for (int i = 0; i < 8; ++i) { // Create child nodes.
-                T newXMin = _xmin + (i & 1) * (_xmax - _xmin) / 2; // Lower or upper half of x-axis.
-                T newYMin = _ymin + ((i >> 1) & 1) * (_ymax - _ymin) / 2;
-                T newZMin = _zmin + ((i >> 2) & 1) * (_zmax - _zmin) / 2;
-                T newXMax = newXMin + (_xmax - _xmin) / 2;
-                T newYMax = newYMin + (_ymax - _ymin) / 2;
-                T newZMax = newZMin + (_zmax - _zmin) / 2;
-                children.push_back(new Node(entityDistribution[i], capacity, newXMin, newYMin, newZMin, newXMax, newYMax, newZMax));
+        T xMid = (xMin + xMax) / 2;
+        T yMid = (yMin + yMax) / 2;
+        T zMid = (zMin + zMax) / 2;
+
+        vector<Node*> newNodes = {
+            new Node({}, capacity, xMin, yMin, zMin, xMid, yMid, zMid),
+            new Node({}, capacity, xMid, yMin, zMin, xMax, yMid, zMid),
+            new Node({}, capacity, xMin, yMid, zMin, xMid, yMax, zMid),
+            new Node({}, capacity, xMid, yMid, zMin, xMax, yMax, zMid),
+            new Node({}, capacity, xMin, yMin, zMid, xMid, yMid, zMax),
+            new Node({}, capacity, xMid, yMin, zMid, xMax, yMid, zMax),
+            new Node({}, capacity, xMin, yMid, zMid, xMid, yMax, zMax),
+            new Node({}, capacity, xMid, yMid, zMid, xMax, yMax, zMax)
+        };
+
+        children = newNodes;
+        divided = true;
+
+        distributeEntities();
+    }
+
+    void distributeEntities() {
+        for (const auto& entity : entities) {
+            if (entity.isLineSegment) {
+                distributeLineSegment(entity);
+            } else {
+                distributePoint(entity);
             }
-            entities.clear();
+        }
+        entities.clear();
+    }
+
+    void distributePoint(const GeometricEntity<T>& point) {
+        for (auto* child : children) {
+            if (pointFitsWithinBox(point, child->xMin, child->yMin, child->zMin, child->xMax, child->yMax, child->zMax)) {
+                child->entities.push_back(point);
+                break; // Ensures the point is only added to one child
+            }
         }
     }
 
-    size_t pointSize() const {
-        return totalPoints;
-    }
-
-    double segmentLength() const {
-        return totalSegmentLength;
-    }
-
-    void print(int level = 0) const {
-        for (int i = 0; i < level; ++i) cout << "--";
-        cout << "Node(totalPoints: " << totalPoints 
-             << ", pointsSize: " << pointSize() << ", totalSegments: " << totalSegments << ", totalSegmentLength: " << totalSegmentLength << ", capacity: " << capacity 
-             << ", bounds: [" << _xmin << "," << _ymin << "," << _zmin 
-             << "]-[" << _xmax << "," << _ymax << "," << _zmax << "])\n";
-        for (const auto* child : children) {
-            child->print(level + 1);
-        }
-    }
-
-private:
-    vector<vector<GeometricEntity<T>>> distributeEntities(const vector<GeometricEntity<T>>& ents) {
-        vector<vector<GeometricEntity<T>>> distribution(8);
-        for (const auto& ent : ents) {
-            if (!ent.isLineSegment) {
-                // For points, distribute based on their coordinates.
-                int index = (ent._x > (_xmin + _xmax) / 2) + ((ent._y > (_ymin + _ymax) / 2) << 1) + ((ent._z > (_zmin + _zmax) / 2) << 2);
-                distribution[index].push_back(ent);
-            } 
-            else {
-                // For line segments, split and distribute based on intersection points.
-                auto segments = splitLineSegment(ent);
-                for (const auto& seg : segments) {
-                    for (int i = 0; i < 8; ++i) {
-                        T xMin = _xmin + (i & 1) * (_xmax - _xmin) / 2;
-                        T yMin = _ymin + ((i >> 1) & 1) * (_ymax - _ymin) / 2;
-                        T zMin = _zmin + ((i >> 2) & 1) * (_zmax - _zmin) / 2;
-                        T xMax = xMin + (_xmax - _xmin) / 2;
-                        T yMax = yMin + (_ymax - _ymin) / 2;
-                        T zMax = zMin + (_zmax - _zmin) / 2;
-
-                        // Check if the split line segment fits within this child node's bounds.
-                        if (segmentFitsWithinBox(seg, xMin, yMin, zMin, xMax, yMax, zMax)) {
-                            distribution[i].push_back(seg);
-                        }
-                    }
+   void distributeLineSegment(const GeometricEntity<T>& segment) {
+    for (auto* child : children) {
+        if (lineSegmentIntersectsBox(segment, child->xMin, child->yMin, child->zMin, child->xMax, child->yMax, child->zMax)) {
+            vector<GeometricEntity<T>> splitSegments = splitLineSegment(segment, child->xMin, child->yMin, child->zMin, child->xMax, child->yMax, child->zMax);
+            for (const auto& splitSegment : splitSegments) {
+                if (lineSegmentIntersectsBox(splitSegment, child->xMin, child->yMin, child->zMin, child->xMax, child->yMax, child->zMax)) {
+                    child->entities.push_back(splitSegment);
                 }
             }
         }
-        return distribution;
     }
+}
 
-    // Function to split a line segment based on child node boundaries.
-    vector<GeometricEntity<T>> splitLineSegment(const GeometricEntity<T>& seg) {
+
+    vector<GeometricEntity<T>> splitLineSegment(const GeometricEntity<T>& segment, T xMin, T yMin, T zMin, T xMax, T yMax, T zMax) {
         vector<GeometricEntity<T>> splitSegments;
+        T x1 = segment._x, y1 = segment._y, z1 = segment._z;
+        T x2 = segment._x2, y2 = segment._y2, z2 = segment._z2;
 
-        // Check intersection with each child node's bounding box
-        for (int i = 0; i < 8; ++i) {
-            T xMin = _xmin + (i & 1) * (_xmax - _xmin) / 2;
-            T yMin = _ymin + ((i >> 1) & 1) * (_ymax - _ymin) / 2;
-            T zMin = _zmin + ((i >> 2) & 1) * (_zmax - _zmin) / 2;
-            T xMax = xMin + (_xmax - _xmin) / 2;
-            T yMax = yMin + (_ymax - _ymin) / 2;
-            T zMax = zMin + (_zmax - _zmin) / 2;
+        vector<tuple<T, T, T>> intersectionPoints;
+        calculateIntersectionPoints(x1, y1, z1, x2, y2, z2, xMin, yMin, zMin, xMax, yMax, zMax, intersectionPoints);
 
-            // Check if the segment intersects with this child node's bounds
-            if (lineSegmentIntersectsBox(seg, xMin, yMin, zMin, xMax, yMax, zMax)) {
-                // Calculate intersection points (in a real implementation)
-                // For now, we'll assume the segment should be split at midpoint
-                auto midpoint = seg.midpoint();
+        intersectionPoints.push_back(make_tuple(x1, y1, z1));
+        intersectionPoints.push_back(make_tuple(x2, y2, z2));
+        sort(intersectionPoints.begin(), intersectionPoints.end(), [&](const tuple<T, T, T>& a, const tuple<T, T, T>& b) {
+            T da = pow(get<0>(a) - x1, 2) + pow(get<1>(a) - y1, 2) + pow(get<2>(a) - z1, 2);
+            T db = pow(get<0>(b) - x1, 2) + pow(get<1>(b) - y1, 2) + pow(get<2>(b) - z1, 2);
+            return da < db;
+        });
 
-                // Create new segments based on the intersection points
-                GeometricEntity<T> newSeg1(seg._x, seg._y, seg._z, midpoint.first, midpoint.second, seg._z2);
-                GeometricEntity<T> newSeg2(midpoint.first, midpoint.second, seg._z, seg._x2, seg._y2, seg._z2);
-
-                // Add new segments to the splitSegments vector
-                splitSegments.push_back(newSeg1);
-                splitSegments.push_back(newSeg2);
-
-                // Break early if necessary, depending on actual intersection logic
-                break;
+        for (size_t i = 0; i < intersectionPoints.size() - 1; ++i) {   //creation of new segments 
+            T nx1, ny1, nz1, nx2, ny2, nz2;
+            tie(nx1, ny1, nz1) = intersectionPoints[i];
+            tie(nx2, ny2, nz2) = intersectionPoints[i + 1];
+            if (nx1 != nx2 || ny1 != ny2 || nz1 != nz2) {
+                splitSegments.emplace_back(nx1, ny1, nz1, nx2, ny2, nz2);
             }
         }
 
         return splitSegments;
     }
 
-    // Function to check if a line segment fits within a given box
-    bool segmentFitsWithinBox(const GeometricEntity<T>& seg, T xMin, T yMin, T zMin, T xMax, T yMax, T zMax) {
-        // For demonstration, assuming segment endpoints must be within box bounds
-        return (seg._x >= xMin && seg._x <= xMax &&
-                seg._y >= yMin && seg._y <= yMax &&
-                seg._z >= zMin && seg._z <= zMax &&
-                seg._x2 >= xMin && seg._x2 <= xMax &&
-                seg._y2 >= yMin && seg._y2 <= yMax &&
-                seg._z2 >= zMin && seg._z2 <= zMax);
+    void calculateIntersectionPoints(T x1, T y1, T z1, T x2, T y2, T z2, T xMin, T yMin, T zMin, T xMax, T yMax, T zMax, vector<tuple<T, T, T>>& intersections) {
+        T planes[6][4] = {
+            {1, 0, 0, -xMin}, {-1, 0, 0, xMax},
+            {0, 1, 0, -yMin}, {0, -1, 0, yMax},
+            {0, 0, 1, -zMin}, {0, 0, -1, zMax}
+        };
+
+        for (const auto& plane : planes) {
+         T a = plane[0], b = plane[1], c = plane[2], d = plane[3];
+         T denom = a * (x2 - x1) + b * (y2 - y1) + c * (z2 - z1);
+         if (abs(denom) > 1e-6) {
+            T t = -(a * x1 + b * y1 + c * z1 + d) / denom;
+            if (t > 0 && t < 1) {
+                T nx = x1 + t * (x2 - x1);
+                T ny = y1 + t * (y2 - y1);
+                T nz = z1 + t * (z2 - z1);
+                if (nx >= xMin && nx <= xMax && ny >= yMin && ny <= yMax && nz >= zMin && nz <= zMax) {
+                    intersections.push_back(make_tuple(nx, ny, nz));
+                }
+            }
+        }
+    }
+}
+    bool pointFitsWithinBox(const GeometricEntity<T>& point, T xMin, T yMin, T zMin, T xMax, T yMax, T zMax) {
+        return (point._x >= xMin && point._x <= xMax &&
+                point._y >= yMin && point._y <= yMax &&
+                point._z >= zMin && point._z <= zMax);
     }
 
-    // Function to check if a line segment intersects with a box
     bool lineSegmentIntersectsBox(const GeometricEntity<T>& seg, T xMin, T yMin, T zMin, T xMax, T yMax, T zMax) {
-        // Simplified check for demonstration purposes.
-        // Real implementation should use more precise geometric calculations.
         return (seg._x <= xMax && seg._x2 >= xMin &&
                 seg._y <= yMax && seg._y2 >= yMin &&
                 seg._z <= zMax && seg._z2 >= zMin);
     }
+
+    int pointSize() const {
+        int size = 0;
+        for (const auto& entity : entities) {
+            if (!entity.isLineSegment) {
+                size++;
+            }
+        }
+        for (const auto* child : children) {
+            size += child->pointSize();
+        }
+        return size;
+    }
+
+    double segmentLength() const {
+        double length = 0;
+        for (const auto& entity : entities) {
+            if (entity.isLineSegment) {
+                length += calculateLength(entity);
+            }
+        }
+        for (const auto* child : children) {
+            length += child->segmentLength();
+        }
+        return length;
+    }
+
+    double calculateLength(const GeometricEntity<T>& seg) const {
+        return sqrt(pow(seg._x2 - seg._x, 2) + pow(seg._y2 - seg._y, 2) + pow(seg._z2 - seg._z, 2));
+    }
+
+    void print(int level = 0) const {
+        string indent(level * 2, '-');
+        cout << indent << "Node(totalPoints: " << pointSize()
+             << ", pointsSize: " << pointSize()
+             << ", totalSegments: " << segmentCount()
+             << ", totalSegmentLength: " << segmentLength()
+             << ", capacity: " << capacity
+             << ", bounds: [" << xMin << "," << yMin << "," << zMin << "]-[" << xMax << "," << yMax << "," << zMax << "])\n";
+
+        for (const auto* child : children) {
+            child->print(level + 1);
+        }
+    }
+
+    int segmentCount() const {
+        int count = 0;
+        for (const auto& entity : entities) {
+            if (entity.isLineSegment) {
+                count++;
+            }
+        }
+        for (const auto* child : children) {
+            count += child->segmentCount();
+        }
+        return count;
+    }
 };
 
+// Function to create the octree
 template <typename T>
 void createTree(Node<T>& node) {
     if (node.entities.size() > node.capacity) {
@@ -336,6 +230,7 @@ void createTree(Node<T>& node) {
     }
 }
 
+// Example usage in main
 int main() {
     int numPoints, numSegments, capacity;
 
@@ -362,14 +257,9 @@ int main() {
     }
 
     Node<int> root(entities, capacity, 0, 0, 0, 100, 100, 100);
-
     createTree(root);
-
-    cout << "\nOctree Structure:\n";
     root.print();
-
-    cout << "\nRoot Node Point Size: " << root.pointSize() << endl;
-    cout << "Root Node Total Segment Length: " << root.segmentLength() << endl;
 
     return 0;
 }
+
